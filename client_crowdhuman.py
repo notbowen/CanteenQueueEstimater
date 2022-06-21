@@ -37,7 +37,7 @@ interval = 30     # Seconds before running program again
 cam = cv2.VideoCapture(0)  # Camera
 
 try:
-  model=attempt_load(model_file_path,map_location='cpu')
+  yolo = torch.hub.load("ultralytics/yolov5", "custom", path="crowdhuman_yolov5m.pt", force_reload=True,map_location='cpu')
 except:
   debug_print("[FATAL] Model Loading Failed")
 
