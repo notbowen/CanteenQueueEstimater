@@ -73,13 +73,6 @@ def on_recv_data(c, addr):
     stall = data[1]
     waiting_time = data[2]
 
-    if waiting_time == "0.9":
-        waiting_time = "< 1"
-    elif float(waiting_time) > 10.0:
-        waiting_time = "> 10"
-    else:
-        waiting_time = "~ " + waiting_time
-
     displayed[stall][0].config(text=f"{stall}:\n\n               {waiting_time}               \nmins\n")
 
     # Reset Last Updated Time

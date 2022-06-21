@@ -74,15 +74,17 @@ class Queue:
 
         return person_count
 
-    # Function to get queue time based on number of ppl in mins
+    # Function to get approximate queue time based on number of ppl in mins (str)
     def getQueueTime(self, people_count):
         secs = people_count * self.queueTime
         approx_mins = secs / 60
 
         if approx_mins < 1.0:
-            return 0.9
+            return "< 1"
+        elif approx_mins > 10.0:
+            return "> 10"
         else:
-            return math.floor(approx_mins)
+            return "~ " + str(math.ceil(approx_mins))
 
 
 # Print in debug mode
