@@ -21,13 +21,14 @@ logging.getLogger("utils.general").setLevel(logging.WARNING)  # yolov5 logger
 
 # Variables
 debug = True
+image_debug = True
 
 server_ip = "127.0.0.1"      # Socket Server info
 server_port = 6942
 
 password = "YW1vZ3Vz"
 
-W, H = 600, 600   # Width and height of cut image
+W, H = 640, 640   # Width and height of cut image
 
 interval = 30     # Seconds before running program again
 
@@ -48,6 +49,10 @@ class Queue:
 
     # Function to cut image and flatten with 4 specified points (imageCutPositions)
     def cutImage(self):
+        if image_debug:
+            self.image = cv2.imread("queue.jpg")
+            return
+
         img = self.image
 
         # Define corresponding points in input image
@@ -93,13 +98,14 @@ def handle_queue(queue):
         debug_print("[DEBUG] Reading queue image...")
 
         # Take picture
-        ret, frame = cam.read()
-        if not ret:  # Handle camera failing to take picture
-            time.sleep(5)
-            continue
+        if not image_debug:
+            ret, frame = cam.read()
+            if not ret:  # Handle camera failing to take picture
+                time.sleep(5)
+                continue
 
-        # Save picture
-        queue.image = frame
+            # Save picture
+            queue.image = frame
 
         # Crop image
         queue.cutImage()
@@ -155,7 +161,7 @@ def main():
     # List of queues a Pi is supposed to handle
     # TODO: Add queues into this list
     # NOTE: This list is unique for every raspberry pi, depending on the stores it's in charge of
-    queues = [Queue("Drinks", 10, [[0,0],[650, 0],[650,400],[0,500]])]
+    queues = [Queue("Drinks", 120, [[0,0],[650, 0],[650,400],[0,500]])]
 
     # Loop through queues and start queue handling thread
     for queue in queues:
