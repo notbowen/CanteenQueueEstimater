@@ -16,7 +16,7 @@ widgetWrapper = tk.Text(root, wrap="char", borderwidth=0,highlightthickness=0,st
 widgetWrapper.pack(fill="both", expand=True)
 
 def additem(i):
-    item = Label(bd = 5, relief="solid", text=f"{stall_name[i]}:\n\n               WATITING TIME               \nmins", font=('Arial', 25), bg="white") #Create the actual widgets
+    item = Label(bd = 5, relief="solid", text=f"{stall_name[i]}:\n\n               WAITING TIME               \nmins", font=('Arial', 25), bg="white") #Create the actual widgets
     displayed[stall_name[i]] = item
     widgetWrapper.window_create("end", window=item) #Put it inside the widget wrapper (the text)
 

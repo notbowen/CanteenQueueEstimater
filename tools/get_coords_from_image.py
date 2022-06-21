@@ -9,7 +9,7 @@ def click_event(event, x, y, flags, params):
  
         # displaying the coordinates
         # on the Shell
-        print(x, ' ', y)
+        print(x, y, sep=", ")
  
         # displaying the coordinates
         # on the image window
@@ -41,10 +41,10 @@ def click_event(event, x, y, flags, params):
 # driver function
 if __name__=="__main__":
  
-    img_path = 'front_queue.jpg'
+    cam = cv2.VideoCapture(0)
 
     # reading the image
-    img = cv2.imread(img_path, 1)
+    img = cam.read()[1]
  
     # displaying the image
     cv2.imshow('image', img)
