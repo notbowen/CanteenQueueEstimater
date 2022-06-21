@@ -77,7 +77,7 @@ class Queue:
     def countPeople(self,confidence_threshold=opt.confidence_threshold):
         results = model(self.image)
         selected_list=[]
-        for inference in results and inference[6]=="head":
+        for inference in results and inference['label']=="head":
           if inference[4]>=confidence_threshold:
             selected_list.append(inference)
         person_count = len(selected_list)
@@ -190,4 +190,8 @@ if __name__ == "__main__":
   parser.add_argument('--confidence_threshold',type=float,default=0.3,help='minimum confidence for inference to be considered')
   opt.parser.parse_args()
   print(opt)
+<<<<<<< HEAD
   main()
+=======
+  main()
+>>>>>>> f927c878229dd2c0bdc0bcb5e1e3fec360036980
