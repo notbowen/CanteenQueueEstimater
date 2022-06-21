@@ -77,7 +77,7 @@ class Queue:
     def countPeople(self,confidence_threshold=opt.confidence_threshold):
         results = model(self.image)
         selected_list=[]
-        for inference in results and inference[6]=="head":
+        for inference in results and inference['label']=="head":
           if inference[4]>=confidence_threshold:
             selected_list.append(inference)
         person_count = len(selected_list)
