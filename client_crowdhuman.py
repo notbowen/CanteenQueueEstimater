@@ -39,7 +39,7 @@ cam = cv2.VideoCapture(0)  # Camera
 try:
   model=attempt_load(model_file_path,map_location='cpu')
 except:
-  
+  debug_print("[FATAL] Model Loading Failed")
 
 # Canteen Queue Class
 # Class for each single canteen stall
