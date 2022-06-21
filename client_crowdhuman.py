@@ -2,10 +2,7 @@
 # In charge of taking a picture, counting
 # and sending info to the server
 
-#activate "--heads" flag when running program
-
 # Libraries
-import argparse
 import torch
 import cv2
 import numpy as np
@@ -189,9 +186,4 @@ def main():
 
 # Run Code
 if __name__ == "__main__":
-  parser = argparse.ArgumentParser()
-  parser.add_argument('--heads', type=bool,action='store_true', help='displays only person')
-  opt = parser.parse_args()
-  print(opt)
-  check_requirements()
   main()
