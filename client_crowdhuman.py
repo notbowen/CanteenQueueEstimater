@@ -3,6 +3,7 @@
 # and sending info to the server
 
 # Libraries
+import argparse
 import torch
 import cv2
 import numpy as np
@@ -37,7 +38,7 @@ interval = 30     # Seconds before running program again
 cam = cv2.VideoCapture(0)  # Camera
 
 try:
-  yolo = torch.hub.load("ultralytics/yolov5", "custom", path="crowdhuman_yolov5m.pt", force_reload=True,map_location='cpu')
+  yolo = torch.hub.load("ultralytics/yolov5", "custom", path="crowdhuman_yolov5m.pt")
 except:
   debug_print("[FATAL] Model Loading Failed")
 
@@ -73,7 +74,7 @@ class Queue:
         self.image = image
 
     # Function to count num of people in CUT image, using YOLOv5 alogrithm
-    def countPeople(self,confidence_threshold=0.3):
+    def countPeople(self,confidence_threshold=opt.confidence_threshold):
         results = model(self.image)
         selected_list=[]
         for inference in results and inference[6]=="head":
@@ -186,4 +187,7 @@ def main():
 
 # Run Code
 if __name__ == "__main__":
+  parser.add_argument('--confidence_threshold',type=float,default=0.3,help='minimum confidence for inference to be considered')
+  opt.parser.parse_args()
+  print(opt)
   main()
