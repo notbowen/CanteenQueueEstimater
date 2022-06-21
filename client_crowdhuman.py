@@ -2,7 +2,10 @@
 # In charge of taking a picture, counting
 # and sending info to the server
 
+#activate "--heads" flag when running program
+
 # Libraries
+import argparse
 import torch
 import cv2
 import numpy as np
@@ -72,10 +75,14 @@ class Queue:
 
         self.image = image
 
-    # Function to count num of people in CUT image, using YOLO alogrithm
-    def countPeople(self):
+    # Function to count num of people in CUT image, using YOLOv5 alogrithm
+    def countPeople(self,confidence_threshold=0.3):
         results = model(self.image)
-        person_count = list(results.xyxyn[0][:,-1].numpy()).count(0.0)
+        selected_list=[]
+        for inference in results and inference[6]=="head":
+          if inference[4]>=confidence_threshold:
+            selected_list.append(inference)
+        person_count = len(selected_list)
 
         return person_count
 
@@ -87,7 +94,7 @@ class Queue:
         if approx_mins < 1.0:
             return 0.9
         else:
-            return math.floor(approx_mins)
+            return round(approx_mins,4)
 
 
 # Print in debug mode
@@ -182,4 +189,9 @@ def main():
 
 # Run Code
 if __name__ == "__main__":
-    main()
+  parser = argparse.ArgumentParser()
+  parser.add_argument('--heads', type=bool,action='store_true', help='displays only person')
+  opt = parser.parse_args()
+  print(opt)
+  check_requirements()
+  main()
