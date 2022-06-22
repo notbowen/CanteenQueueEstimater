@@ -187,11 +187,7 @@ def main():
 
 # Run Code
 if __name__ == "__main__":
-  parser.add_argument('--confidence_threshold',type=float,default=0.3,help='minimum confidence for inference to be considered')
-  opt.parser.parse_args()
-  print(opt)
-<<<<<<< HEAD
-  main()
-=======
-  main()
->>>>>>> f927c878229dd2c0bdc0bcb5e1e3fec360036980
+    parser.add_argument('--confidence_threshold',type=float,default=0.3,help='minimum confidence for inference to be considered')
+    opt.parser.parse_args()
+    print(opt)
+    main()
