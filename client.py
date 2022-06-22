@@ -56,7 +56,7 @@ class Queue:
     # Function to cut image and flatten with 4 specified points (imageCutPositions)
     def cutImage(self):
         if image_debug:
-            self.image = cv2.imread("queue.jpg")
+            self.image = cv2.imread("./testing/queue_2.jpg")
             return
 
         img = self.image
