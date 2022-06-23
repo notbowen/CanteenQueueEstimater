@@ -3,6 +3,9 @@
 # Displayed via GET request to /
 # / should auto refresh once every minute
 
+# TODO: Refresh once every minute
+# TODO: Check for AFK request
+
 # Libraries
 import flask
 from flask import render_template, request
