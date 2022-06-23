@@ -4,10 +4,10 @@
 
 # Libraries
 import argparse
+import sys
 import torch
 import cv2
 import numpy as np
-import math
 
 import threading
 import time
@@ -29,8 +29,6 @@ server_port = 6942
 
 password = "YW1vZ3Vz"
 
-model_file_path = "Placeholder Text"
-
 W, H = 640, 640   # Width and height of cut image
 
 interval = 30     # Seconds before running program again
@@ -38,9 +36,12 @@ interval = 30     # Seconds before running program again
 cam = cv2.VideoCapture(0)  # Camera
 
 try:
-  yolo = torch.hub.load("ultralytics/yolov5", "custom", path="crowdhuman_yolov5m.pt")
+    model = torch.hub.load("ultralytics/yolov5", "custom", path="crowdhuman_yolov5m.pt")
 except:
-  debug_print("[FATAL] Model Loading Failed")
+    print("[FATAL] Failed to load model!")
+    print("[INFO]  Check if yolo_v5 crowdhuman is downloaded!")
+    print("[INFO]  Link: https://drive.google.com/u/2/uc?id=1gglIwqxaH2iTvy6lZlXuAcMpd_U0GCUb&export=download&confirm=t")
+    sys.exit(1)
 
 # Canteen Queue Class
 # Class for each single canteen stall
