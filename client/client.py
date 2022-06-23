@@ -21,8 +21,8 @@ print("Starting script...")
 logging.getLogger("utils.general").setLevel(logging.WARNING)  # yolov5 logger
 
 # Variables
-debug = True
-image_debug = True
+debug = args.debug
+image_debug = args.image_debug
 
 server_ip = "127.0.0.1"      # Socket Server info
 server_port = 6942
@@ -75,7 +75,7 @@ class Queue:
         self.image = image
 
     # Function to count num of people in CUT image, using YOLOv5 alogrithm
-    def countPeople(self,confidence_threshold=opt.confidence_threshold):
+    def countPeople(self,confidence_threshold=args.confidence_threshold):
         results = model(self.image)
         selected_list=[]
         for inference in results and inference['label']=="head":
@@ -189,6 +189,9 @@ def main():
 # Run Code
 if __name__ == "__main__":
     parser.add_argument('--confidence_threshold',type=float,default=0.3,help='minimum confidence for inference to be considered')
-    opt.parser.parse_args()
-    print(opt)
+    parser.add_argument('--debug',type=bool,default=False,help='turns on debugging function')
+    oarser.add_argument('--image_debug',type=bool,default=False,'turns on image debugging')
+    parser.add_argument('--server_link',type=str,default=None,'link for clients to push information to')
+    args.parser.parse_args()
+    print(args)
     main()
