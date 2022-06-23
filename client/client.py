@@ -4,7 +4,10 @@
 
 # Libraries
 import argparse
+import math
+import os
 import sys
+import requests
 import torch
 import cv2
 import numpy as np
@@ -13,21 +16,26 @@ import threading
 import time
 import logging
 
-import socket
-
 print("Starting script...")
 
 # Supress YOLOv5 Logging
 logging.getLogger("utils.general").setLevel(logging.WARNING)  # yolov5 logger
 
-# Variables
+# Parsing Arguments
+parser = argparse.ArgumentParser(description='Client for Canteen Queue Counter')
+parser.add_argument('--confidence_threshold',type=float,default=0.3,help='minimum confidence for inference to be considered')
+parser.add_argument('--debug',type=bool,default=False,help='turns on debugging function')
+parser.add_argument('--image_debug',type=bool,default=False,help='turns on image debugging')
+args = parser.parse_args()
+
 debug = args.debug
 image_debug = args.image_debug
 
-server_ip = "127.0.0.1"      # Socket Server info
-server_port = 6942
+# Variables
+url = "http://localhost/"
 
-password = "YW1vZ3Vz"
+auth_key = os.environ["QUEUE_AUTH_KEY"]
+auth_token = os.environ["QUEUE_AUTH_TOKEN"]
 
 W, H = 640, 640   # Width and height of cut image
 
@@ -57,7 +65,8 @@ class Queue:
     # Function to cut image and flatten with 4 specified points (imageCutPositions)
     def cutImage(self):
         if image_debug:
-            self.image = cv2.imread("./testing/queue_2.jpg")
+            img_path = r"D:\python\CanteenQueueEstimater\testing\queue_2.jpg"  # TODO: Make this relative path
+            self.image = cv2.imread(img_path)
             return
 
         img = self.image
@@ -77,12 +86,7 @@ class Queue:
     # Function to count num of people in CUT image, using YOLOv5 alogrithm
     def countPeople(self,confidence_threshold=args.confidence_threshold):
         results = model(self.image)
-        selected_list=[]
-        for inference in results and inference['label']=="head":
-          if inference[4]>=confidence_threshold:
-            selected_list.append(inference)
-        person_count = len(selected_list)
-
+        person_count = list(results.xyxyn[0][:,-1].numpy()).count(1.0)
         return person_count
 
     # Function to get queue time based on number of ppl in mins
@@ -93,7 +97,7 @@ class Queue:
         if approx_mins < 1.0:
             return 0.9
         else:
-            return round(approx_mins,4)
+            return "~" + str(math.ceil(approx_mins))
 
 
 # Print in debug mode
@@ -128,39 +132,18 @@ def handle_queue(queue):
         debug_print("[DEBUG] Counting people...")
         people_count = queue.countPeople()
 
-        # Connect to server and send data
-        # Connect to server
-        try:
-            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            debug_print("[DEBUG] Socket Created!")
-        except socket.error as error:
-            print("[FATAL] Error while creating Socket!")
-            print("Error Log: " + str(error))
-            print("Recovering...")
-            time.sleep(10)
-            continue
-
-        try:
-            sock.connect((server_ip, server_port))
-            debug_print(f"[DEBUG] Connected to {server_ip}:{server_port}")
-        except socket.error as error:
-            print("[FATAL] Error while connecting to server!")
-            print("Error Log: " + str(error))
-            print("Recovering...")
-            time.sleep(10)
-            continue
-
+        # Get queue time
         queue_time = queue.getQueueTime(people_count)
 
-        # Send data
-        data = password + "|" + queue.stallName + "|" + str(queue_time)
-        debug_print("[DEBUG] Sending data: " + data)
-        sock.send(data.encode())
+        # Send data to flask server
+        authentication = {auth_key: auth_token}
 
-        # Wait for server to send back ACK and close socket
-        sock.recv(1024)
-        sock.close()
-        debug_print(f"[DEBUG] ACK Received, waiting for {interval} seconds...")
+        debug_print("[DEBUG] Sending data to server...")
+        r = requests.post(url + f"/api/update_timing?stall_name={queue.stallName}&queue_time={queue_time}", headers=authentication)
+
+        if r.status_code != 200:
+            print("[ERROR] Received status code: " + str(r.status_code) + " from server!")
+            print("[ERROR] Response: " + str(r.text))
 
         # Wait for interval
         if time.time() - start_time < interval:
@@ -188,10 +171,4 @@ def main():
 
 # Run Code
 if __name__ == "__main__":
-    parser.add_argument('--confidence_threshold',type=float,default=0.3,help='minimum confidence for inference to be considered')
-    parser.add_argument('--debug',type=bool,default=False,help='turns on debugging function')
-    oarser.add_argument('--image_debug',type=bool,default=False,'turns on image debugging')
-    parser.add_argument('--server_link',type=str,default=None,'link for clients to push information to')
-    args.parser.parse_args()
-    print(args)
     main()
