@@ -21,7 +21,7 @@ args = parser.parse_args()
 
 # Flask init
 app = flask.Flask(__name__)
-app.config["DEBUG"] = args.debug   # TODO: Change to False on production
+app.config["DEBUG"] = args.debug
 
 # Variables
 
@@ -114,3 +114,4 @@ if __name__ == "__main__":
     else:
         http_server = WSGIServer(("0.0.0.0", 80), app)  # Production Mode
         http_server.serve_forever()
+        print("[INFO] Server up and running.")
