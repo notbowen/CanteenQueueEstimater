@@ -1,4 +1,4 @@
-Flask==2.0.2
 numpy==1.19.5
 opencv_python==4.5.4.60
+requests==2.25.1
 torch==1.11.0
