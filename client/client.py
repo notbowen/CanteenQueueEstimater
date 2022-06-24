@@ -8,6 +8,7 @@ import math
 import os
 import sys
 import requests
+
 import torch
 import cv2
 import numpy as np
@@ -19,20 +20,21 @@ import logging
 print("Starting script...")
 
 # Supress YOLOv5 Logging
-logging.getLogger("utils.general").setLevel(logging.WARNING)  # yolov5 logger
+logging.getLogger("utils.general").setLevel(logging.WARNING)
 
-# Parsing Arguments
+# Parse Arguments
 parser = argparse.ArgumentParser(description='Client for Canteen Queue Counter')
-parser.add_argument('--confidence_threshold',type=float,default=0.3,help='minimum confidence for inference to be considered')
-parser.add_argument('--debug',type=bool,default=False,help='turns on debugging function')
-parser.add_argument('--image_debug',type=bool,default=False,help='turns on image debugging')
+parser.add_argument('--confidence_threshold', type=float, default=0.3, help='Minimum confidence for inference to be considered')
+parser.add_argument('--debug', default=False, action="store_true", help='Turns on debug logging')
+parser.add_argument('--image_debug', default=False, action="store_true", help='Turns on image debugging')
+parser.add_argument('--url', type=str, default="http://localhost/", help='Url of flask server')
 args = parser.parse_args()
 
+# Variables
 debug = args.debug
 image_debug = args.image_debug
 
-# Variables
-url = "http://localhost/"
+url = args.url
 
 auth_key = os.environ["QUEUE_AUTH_KEY"]
 auth_token = os.environ["QUEUE_AUTH_TOKEN"]
@@ -45,6 +47,7 @@ cam = cv2.VideoCapture(0)  # Camera
 
 try:
     model = torch.hub.load("ultralytics/yolov5", "custom", path="crowdhuman_yolov5m.pt")
+    model.conf = args.confidence_threshold
 except:
     print("[FATAL] Failed to load model!")
     print("[INFO]  Check if yolo_v5 crowdhuman is downloaded!")
@@ -65,7 +68,8 @@ class Queue:
     # Function to cut image and flatten with 4 specified points (imageCutPositions)
     def cutImage(self):
         if image_debug:
-            img_path = r"D:\python\CanteenQueueEstimater\testing\queue_2.jpg"  # TODO: Make this relative path
+            current_dir = os.path.dirname(__file__)
+            img_path = os.path.join(current_dir, "../testing/queue_2.jpg")
             self.image = cv2.imread(img_path)
             return
 
@@ -84,7 +88,7 @@ class Queue:
         self.image = image
 
     # Function to count num of people in CUT image, using YOLOv5 alogrithm
-    def countPeople(self,confidence_threshold=args.confidence_threshold):
+    def countPeople(self):
         results = model(self.image)
         person_count = list(results.xyxyn[0][:,-1].numpy()).count(1.0)
         return person_count
@@ -139,11 +143,15 @@ def handle_queue(queue):
         authentication = {auth_key: auth_token}
 
         debug_print("[DEBUG] Sending data to server...")
-        r = requests.post(url + f"/api/update_timing?stall_name={queue.stallName}&queue_time={queue_time}", headers=authentication)
 
-        if r.status_code != 200:
-            print("[ERROR] Received status code: " + str(r.status_code) + " from server!")
-            print("[ERROR] Response: " + str(r.text))
+        try:
+            r = requests.post(url + f"/api/update_timing?stall_name={queue.stallName}&queue_time={queue_time}", headers=authentication)
+            if r.status_code != 200:
+                print("[ERROR] Received status code: " + str(r.status_code) + " from server!")
+                print("[ERROR] Response: " + str(r.text))
+        except Exception as e:
+            print("[ERROR] Failed to send data to server!")
+            print("Error Log: " + str(e))
 
         # Wait for interval
         if time.time() - start_time < interval:
