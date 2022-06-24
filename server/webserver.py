@@ -4,19 +4,22 @@
 # / should auto refresh once every minute
 
 # TODO: Refresh once every minute
-# TODO: Check for AFK request
 
 # Libraries
 import flask
 from flask import render_template, request
 
 import os
+import time
+import threading
 
 # Flask init
 app = flask.Flask(__name__)
 app.config["DEBUG"] = True   # TODO: Change to False on production
 
 # Variables
+
+update_threshold = 60   # Time before display shows "???"
 
 # Authentication key and token
 auth_key = os.environ["QUEUE_AUTH_KEY"]
@@ -31,12 +34,21 @@ timings = {}
 
 # Init timings
 for stall in stall_names:
-    timings[stall] = "???"
+    timings[stall] = ["???", 0]  # [Queue Time, Time Since Last Update]
+
+# Last Update Checker
+def last_update_checker():
+    while True:
+        time.sleep(1)
+        for stall_name, stall_info in timings.items():
+            stall_info[1] += 1
+            if stall_info[1] >= update_threshold and stall_info[0] != "???":
+                timings[stall_name][0] = "???"
 
 # index.html
 @app.route("/", methods=["GET"])
 def index():
-    return render_template("index.html", timings=timings)  # TODO: Write index.html
+    return render_template("index.html", timings=timings)
 
 # API
 # Update timings
@@ -60,7 +72,8 @@ def update_timing():
         return "Missing queue time", 400
 
     # Update timings
-    timings[request.args["stall_name"]] = request.args["queue_time"]
+    timings[request.args["stall_name"]][0] = request.args["queue_time"]
+    timings[request.args["stall_name"]][1] = 0
 
     return "Successfully updated timings", 200
 
@@ -76,8 +89,14 @@ def get_timing():
         return "Invalid stall name", 400
 
     # Return queue time
-    return timings[request.args["stall_name"]], 200
+    return timings[request.args["stall_name"]][0], 200
 
 # Run server
 if __name__ == "__main__":
+    # Start last update checker thread
+    thread = threading.Thread(target=last_update_checker)
+    thread.daemon = True
+    thread.start()
+
+    # Run Flask server
     app.run(host="0.0.0.0", port=80)
