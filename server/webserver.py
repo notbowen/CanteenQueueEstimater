@@ -3,6 +3,13 @@
 # Displayed via GET request to /
 # / should auto refresh once every minute
 
+"""
+===== NOTES =====
+- When setting up on a new machine, you need to run the following commands:
+    - pip install -r requirements.txt
+    - change up ~/.bashrc to include QUEUE_AUTH_KEY and TOKEN
+"""
+
 # Libraries
 import flask
 from flask import jsonify, render_template, request

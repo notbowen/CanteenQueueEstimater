@@ -34,7 +34,7 @@ args = parser.parse_args()
 debug = args.debug
 image_debug = args.image_debug
 
-url = args.url
+url = args.url  # TODO: Update this to default to webserver addr
 
 auth_key = os.environ["QUEUE_AUTH_KEY"]
 auth_token = os.environ["QUEUE_AUTH_TOKEN"]
