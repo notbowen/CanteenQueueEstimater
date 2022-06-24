@@ -3,11 +3,9 @@
 # Displayed via GET request to /
 # / should auto refresh once every minute
 
-# TODO: Refresh once every minute
-
 # Libraries
 import flask
-from flask import render_template, request
+from flask import jsonify, render_template, request
 
 import os
 import time
@@ -83,6 +81,10 @@ def get_timing():
     # Check if stall name in request
     if "stall_name" not in request.args:
         return "Missing stall name", 400
+
+    # Check if stall name is all
+    if request.args["stall_name"] == "all":
+        return jsonify(timings), 200
 
     # Check if stall name is valid
     if request.args["stall_name"] not in stall_names:
