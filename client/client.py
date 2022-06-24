@@ -20,7 +20,7 @@ import logging
 print("Starting script...")
 
 # Supress YOLOv5 Logging
-logging.getLogger("utils.general").setLevel(logging.WARNING)
+logging.getLogger("yolov5").setLevel(logging.WARNING)
 
 # Parse Arguments
 parser = argparse.ArgumentParser(description='Client for Canteen Queue Counter')
