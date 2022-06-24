@@ -6,14 +6,22 @@
 # Libraries
 import flask
 from flask import jsonify, render_template, request
+from gevent.pywsgi import WSGIServer
 
 import os
 import time
 import threading
 
+import argparse
+
+# Parse Arguments
+parser = argparse.ArgumentParser(description='Canteen Queue Counter Webserver')
+parser.add_argument('--debug', default=False, action="store_true", help='Turns on debug server')
+args = parser.parse_args()
+
 # Flask init
 app = flask.Flask(__name__)
-app.config["DEBUG"] = True   # TODO: Change to False on production
+app.config["DEBUG"] = args.debug   # TODO: Change to False on production
 
 # Variables
 
@@ -101,4 +109,8 @@ if __name__ == "__main__":
     thread.start()
 
     # Run Flask server
-    app.run(host="0.0.0.0", port=80)
+    if args.debug:
+        app.run(host="0.0.0.0", port=80)  # Debug mode
+    else:
+        http_server = WSGIServer(("0.0.0.0", 80), app)  # Production Mode
+        http_server.serve_forever()
