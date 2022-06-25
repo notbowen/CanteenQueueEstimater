@@ -119,6 +119,6 @@ if __name__ == "__main__":
     if args.debug:
         app.run(host="0.0.0.0", port=80)  # Debug mode
     else:
+        print("[INFO] Initializing server...")
         http_server = WSGIServer(("0.0.0.0", 80), app)  # Production Mode
         http_server.serve_forever()
-        print("[INFO] Server up and running.")
