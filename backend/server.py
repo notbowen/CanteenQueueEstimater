@@ -8,11 +8,15 @@ import threading
 import socket
 
 import argparse
+import os
 import time
+
+import requests
 
 # Parse Arguments
 parser = argparse.ArgumentParser(description='Socket Server for Canteen Queue Counter')
 parser.add_argument('--debug', default=False, action="store_true", help='Turns on debug logging')
+parser.add_argument('--url', type=str, default="http://localhost", help='URL of Flask Server')
 parser.add_argument('--ip', type=str, default="0.0.0.0", help='IP Address of Socket Server')
 parser.add_argument('--port', type=int, default=6942, help='Port of Socket Server')
 args = parser.parse_args()
@@ -22,6 +26,11 @@ debug = args.debug
 
 server_ip = args.ip
 server_port = args.port
+
+url = args.url
+
+auth_key = os.environ["QUEUE_AUTH_KEY"]
+auth_token = os.environ["QUEUE_AUTH_TOKEN"]
 
 stall_name = ["Drinks", "Snacks", "Malay 1", "Malay 2", "Western", "Chicken Rice", "Oriental Taste", "CLOSED"]
 displayed = {}  # Format: [<Tkinter Label Class>, <Last Updated Time (int)>]
@@ -82,6 +91,18 @@ def on_recv_data(c, addr):
     waiting_time = data[2]
 
     displayed[stall][0].config(text=f"{stall}:\n\n               {waiting_time}               \nmins\n")
+
+    # Update Flask server
+    authentication = {auth_key: auth_token}
+
+    try:
+        r = requests.post(url + f"/api/update_timing?stall_name={stall}&queue_time={waiting_time}", headers=authentication)
+        if r.status_code != 200:
+            print("[ERROR] Received status code: " + str(r.status_code) + " from server!")
+            print("[ERROR] Response: " + str(r.text))
+    except Exception as e:
+        print("[ERROR] Failed to send data to server!")
+        print("Error Log: " + str(e))
 
     # Reset Last Updated Time
     displayed[stall][1] = 0
