@@ -4,40 +4,42 @@
 
 # Libraries
 import argparse
-import math
-import os
 import sys
-import requests
 
 import torch
 import cv2
 import numpy as np
+import math
 
 import threading
 import time
 import logging
+import os
+
+import socket
 
 print("Starting script...")
 
 # Supress YOLOv5 Logging
-logging.getLogger("yolov5").setLevel(logging.WARNING)
+logging.getLogger("utils.general").setLevel(logging.WARNING)  # yolov5 logger
 
 # Parse Arguments
 parser = argparse.ArgumentParser(description='Client for Canteen Queue Counter')
 parser.add_argument('--confidence_threshold', type=float, default=0.3, help='Minimum confidence for inference to be considered')
 parser.add_argument('--debug', default=False, action="store_true", help='Turns on debug logging')
 parser.add_argument('--image_debug', default=False, action="store_true", help='Turns on image debugging')
-parser.add_argument('--url', type=str, default="http://localhost/", help='Url of flask server')
+parser.add_argument('--ip', type=str, default="127.0.0.1", help='IP Address of Socket Server')
+parser.add_argument('--port', type=int, default=6942, help='Port of Socket Server')
 args = parser.parse_args()
 
 # Variables
 debug = args.debug
 image_debug = args.image_debug
 
-url = args.url  # TODO: Update this to default to webserver addr
+server_ip = args.ip
+server_port = args.port
 
-auth_key = os.environ["QUEUE_AUTH_KEY"]
-auth_token = os.environ["QUEUE_AUTH_TOKEN"]
+password = "YW1vZ3Vz"
 
 W, H = 640, 640   # Width and height of cut image
 
@@ -47,7 +49,6 @@ cam = cv2.VideoCapture(0)  # Camera
 
 try:
     model = torch.hub.load("ultralytics/yolov5", "custom", path="crowdhuman_yolov5m.pt")
-    model.conf = args.confidence_threshold
 except:
     print("[FATAL] Failed to load model!")
     print("[INFO]  Check if yolo_v5 crowdhuman is downloaded!")
@@ -136,22 +137,39 @@ def handle_queue(queue):
         debug_print("[DEBUG] Counting people...")
         people_count = queue.countPeople()
 
-        # Get queue time
-        queue_time = queue.getQueueTime(people_count)
-
-        # Send data to flask server
-        authentication = {auth_key: auth_token}
-
-        debug_print("[DEBUG] Sending data to server...")
+        # Connect to server and send data
+        # Connect to server
+        try:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            debug_print("[DEBUG] Socket Created!")
+        except socket.error as error:
+            print("[FATAL] Error while creating Socket!")
+            print("Error Log: " + str(error))
+            print("Recovering...")
+            time.sleep(10)
+            continue
 
         try:
-            r = requests.post(url + f"/api/update_timing?stall_name={queue.stallName}&queue_time={queue_time}", headers=authentication)
-            if r.status_code != 200:
-                print("[ERROR] Received status code: " + str(r.status_code) + " from server!")
-                print("[ERROR] Response: " + str(r.text))
-        except Exception as e:
-            print("[ERROR] Failed to send data to server!")
-            print("Error Log: " + str(e))
+            sock.connect((server_ip, server_port))
+            debug_print(f"[DEBUG] Connected to {server_ip}:{server_port}")
+        except socket.error as error:
+            print("[FATAL] Error while connecting to server!")
+            print("Error Log: " + str(error))
+            print("Recovering...")
+            time.sleep(10)
+            continue
+
+        queue_time = queue.getQueueTime(people_count)
+
+        # Send data
+        data = password + "|" + queue.stallName + "|" + str(queue_time)
+        debug_print("[DEBUG] Sending data: " + data)
+        sock.send(data.encode())
+
+        # Wait for server to send back ACK and close socket
+        sock.recv(1024)
+        sock.close()
+        debug_print(f"[DEBUG] ACK Received, waiting for {interval} seconds...")
 
         # Wait for interval
         if time.time() - start_time < interval:

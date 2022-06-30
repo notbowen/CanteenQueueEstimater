@@ -7,13 +7,21 @@ import tkinter as tk
 import threading
 import socket
 
+import argparse
 import time
 
-# Variables
-debug = True
+# Parse Arguments
+parser = argparse.ArgumentParser(description='Socket Server for Canteen Queue Counter')
+parser.add_argument('--debug', default=False, action="store_true", help='Turns on debug logging')
+parser.add_argument('--ip', type=str, default="0.0.0.0", help='IP Address of Socket Server')
+parser.add_argument('--port', type=int, default=6942, help='Port of Socket Server')
+args = parser.parse_args()
 
-server_ip = "127.0.0.1"
-server_port = 6942
+# Variables
+debug = args.debug
+
+server_ip = args.ip
+server_port = args.port
 
 stall_name = ["Drinks", "Snacks", "Malay 1", "Malay 2", "Western", "Chicken Rice", "Oriental Taste", "CLOSED"]
 displayed = {}  # Format: [<Tkinter Label Class>, <Last Updated Time (int)>]
@@ -32,11 +40,11 @@ def debug_print(msg):
 def init_GUI():
     root = tk.Tk()
 
-    widgetWrapper = tk.Text(root, wrap="char", borderwidth=0,highlightthickness=0,state="disabled", cursor="arrow") 
+    widgetWrapper = tk.Text(root, wrap="char", borderwidth=0, highlightthickness=0, state="disabled", cursor="arrow") 
     widgetWrapper.pack(fill="both", expand=True)
 
     def additem(i):
-        item = tk.Label(bd = 5, relief="solid", text=f"{stall_name[i]}:\n\n               WAITING TIME               \nmins", font=('Arial', 25), bg="white") #Create the actual widgets
+        item = tk.Label(bd = 5, relief="solid", text=f"{stall_name[i]}:\n\n               ???               \nmins", font=('Arial', 25), bg="white") #Create the actual widgets
         displayed[stall_name[i]] = [item, 0]
         widgetWrapper.window_create("end", window=item)
 
