@@ -10,6 +10,7 @@ import socket
 import argparse
 import os
 import time
+import sys
 
 import requests
 
@@ -29,16 +30,29 @@ server_port = args.port
 
 url = args.url
 
-auth_key = os.environ["QUEUE_AUTH_KEY"]
-auth_token = os.environ["QUEUE_AUTH_TOKEN"]
+# Read Credentials
+cred_path = os.path.join(os.path.dirname(__file__), "../misc/credentials.txt")
+credentials = {}
+
+with open(cred_path, "r") as f:
+    for line in f:
+       (key, val) = line.split("=")
+       credentials[key] = val
+    f.close()
+
+try:
+    password = credentials["password"].strip("\n")
+    auth_key = credentials["auth_key"].strip("\n")
+    auth_token = credentials["auth_token"].strip("\n")
+except KeyError:
+    print("[FATAL] Missing credentials in credentials.txt")
+    sys.exit(1)
 
 stall_name = ["Drinks", "Snacks", "Malay 1", "Malay 2", "Western", "Chicken Rice", "Oriental Taste", "CLOSED"]
 displayed = {}  # Format: [<Tkinter Label Class>, <Last Updated Time (int)>]
 max_clients = 8
 
 last_update_threshold = 60
-
-password = "YW1vZ3Vz"
 
 # Debug print
 def debug_print(msg):

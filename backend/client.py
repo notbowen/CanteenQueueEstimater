@@ -39,7 +39,21 @@ image_debug = args.image_debug
 server_ip = args.ip
 server_port = args.port
 
-password = "YW1vZ3Vz"
+# Read credentials
+cred_path = os.path.join(os.path.dirname(__file__), "../misc/credentials.txt")
+credentials = {}
+
+with open(cred_path, "r") as f:
+    for line in f:
+       (key, val) = line.split("=")
+       credentials[key] = val
+    f.close()
+
+try:
+    password = credentials["password"].strip("\n")
+except KeyError:
+    print("[FATAL] Password not found in credentials.txt")
+    sys.exit(1)
 
 W, H = 640, 640   # Width and height of cut image
 
