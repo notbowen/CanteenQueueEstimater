@@ -9,6 +9,7 @@ import sys
 import torch
 import cv2
 import numpy as np
+import picamera
 import math
 
 import threading
@@ -58,8 +59,6 @@ except KeyError:
 W, H = 640, 640   # Width and height of cut image
 
 interval = 30     # Seconds before running program again
-
-cam = cv2.VideoCapture(0)  # Camera
 
 try:
     model = torch.hub.load("ultralytics/yolov5", "custom", path="crowdhuman_yolov5m.pt")
@@ -133,13 +132,21 @@ def handle_queue(queue):
 
         # Take picture
         if not image_debug:
-            ret, frame = cam.read()
-            if not ret:  # Handle camera failing to take picture
-                time.sleep(5)
-                continue
+            with picamera.PiCamera() as camera:
+                camera.resolution = (320, 240)
+                camera.framerate = 24
+                time.sleep(2)
+                image = np.empty((240 * 320 * 3,), dtype=np.uint8)
+                camera.capture(image, 'bgr')
+                image = image.reshape((240, 320, 3))
 
-            # Save picture
-            queue.image = frame
+                # ret, frame = cam.read()
+                # if not ret:  # Handle camera failing to take picture
+                #     time.sleep(5)
+                #     continue
+
+                # Save picture
+                queue.image = image
 
         # Crop image
         queue.cutImage()
