@@ -16,7 +16,7 @@ model = torch.hub.load("ultralytics/yolov5", "yolov5m", pretrained=True)
 
 W, H = 600, 200
 
-img = cv2.imread("front_queue.jpg")
+img = cv2.imread("C:\\Users\\hbw30\\Downloads\\python.jpg")
 pts0 = np.float32([[404, 414],[1461, 256],[1416, 792],[441, 791]])
 
 # Define corresponding points in output image

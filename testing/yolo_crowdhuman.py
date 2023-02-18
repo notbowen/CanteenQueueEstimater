@@ -1,7 +1,7 @@
 import torch
 
 save_path = "crowdhuman_yolov5m.pt"
-image_path = "queue_2.jpg"
+image_path = "C:\\Users\\hbw30\\Downloads\\python.jpg"
 
 model = torch.hub.load("ultralytics/yolov5", "custom", path="../backend/crowdhuman_yolov5m.pt")
 
