@@ -10,3 +10,8 @@ Project using [YoloV5 Crowdhuman](https://github.com/deepakcrk/yolov5-crowdhuman
 ## Docker Setup Instructions
 
 * To be added soon
+
+### Useful Links
+
+* [Getting started with PiCamera - raspberrypi.org](https://projects.raspberrypi.org/en/projects/getting-started-with-picamera/7)
+* [Headless Raspberry Pi Setup - medium.com](https://medium.com/@bezzam/headless-raspberry-pi-hq-camera-setup-and-focusing-258ac5cca5ea)
